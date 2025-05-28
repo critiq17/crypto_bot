@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"strings"
 
 	"github.com/critiq/crypto_bot/api"
@@ -10,7 +11,8 @@ import (
 
 func main() {
 
-	bot, err := tgbotapi.NewBotAPI("7563721679:AAEXPwmSC2lbg4E5h4V1_LA86OSWt5Jearo")
+	botToken := os.Getenv("BOT_TOKEN")
+	bot, err := tgbotapi.NewBotAPI(botToken)
 	if err != nil {
 		log.Panic(err)
 	}
