@@ -6,19 +6,19 @@ import (
 	"strings"
 
 	"github.com/critiq/crypto_bot/api"
+	"github.com/critiq/crypto_bot/buttons"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 func main() {
-
 	botToken := os.Getenv("BOT_TOKEN")
 	bot, err := tgbotapi.NewBotAPI(botToken)
 	if err != nil {
 		log.Panic(err)
 	}
 
-	bot.Debug = true
-	log.Printf("Authorized on account %s", &bot.Self.UserName)
+	// bot.Debug = true
+	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
@@ -29,6 +29,15 @@ func main() {
 			continue
 		}
 
+		// logging
+		user := update.Message.From
+		userName := user.UserName
+		firstName := user.FirstName
+		lastName := user.LastName
+		text := update.Message.Text
+
+		log.Printf("@%s (%s %s): %s", userName, firstName, lastName, text)
+
 		if update.Message.Text == "/start" {
 			name := update.Message.From.FirstName
 			msgText := "Hello, " + name + "\n\n" +
@@ -36,10 +45,12 @@ func main() {
 				"`/price BTC`\n" + "or other coin"
 
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, msgText)
+			msg.ReplyMarkup = buttons.MainMenu()
 			msg.ParseMode = "Markdown"
 			bot.Send(msg)
 			continue
 		}
+
 		if strings.HasPrefix(update.Message.Text, "/price") {
 			args := strings.Split(update.Message.Text, " ")
 
@@ -59,9 +70,10 @@ func main() {
 				reply = "Price " + symbol + ": $" + price
 			}
 
+			log.Printf(bot.Self.FirstName, reply)
+
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
 			bot.Send(msg)
 		}
-
 	}
 }
