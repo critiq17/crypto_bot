@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/critiq/crypto_bot/api"
@@ -40,7 +42,7 @@ func main() {
 
 		if update.Message.Text == "/start" {
 			name := update.Message.From.FirstName
-			msgText := "Hello, " + name + "\n\n" +
+			msgText := "Hello, " + name + "\n" +
 				"I'm crypto price bot. To check the price of a coin, just send:\n" +
 				"`/price BTC`\n" + "or other coin"
 
@@ -49,6 +51,27 @@ func main() {
 			msg.ParseMode = "Markdown"
 			bot.Send(msg)
 			continue
+		}
+
+		if strings.HasPrefix(update.Message.Text, "/convert") {
+			parts := strings.Split(update.Message.Text, " ")
+			if len(parts) != 4 {
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Usage: /convert [amout] [from] [to]"))
+				continue
+			}
+
+			amount, _ := strconv.ParseFloat(parts[1], 64)
+			from := strings.ToLower(parts[2])
+			to := strings.ToLower(parts[3])
+
+			converted, err := api.GetConvert(from, to, amount)
+			if err != nil {
+				bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Conversion error: "+err.Error()))
+				continue
+			}
+
+			response := fmt.Sprintf("%.4f %s = %.4f %s", amount, from, converted, to)
+			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, response))
 		}
 
 		if strings.HasPrefix(update.Message.Text, "/price") {
