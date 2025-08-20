@@ -2,19 +2,22 @@ package main
 
 import (
 	"log"
-	"os"
 	"strings"
 
-	"github.com/critiq/crypto_bot/api"
+	"github.com/critiq/crypto_bot/pkg/api"
+	"github.com/critiq/crypto_bot/pkg/config"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 func main() {
 
-	botToken := os.Getenv("BOT_TOKEN")
+	config := config.LoadConfig()
+
+	botToken := config.BotToken
+
 	bot, err := tgbotapi.NewBotAPI(botToken)
 	if err != nil {
-		log.Panic(err)
+		log.Printf("Bot not init")
 	}
 
 	bot.Debug = true
